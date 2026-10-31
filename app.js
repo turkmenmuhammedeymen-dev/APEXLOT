@@ -6,7 +6,7 @@ scene.background=new THREE.Color(0x83c9ef);
 scene.fog=new THREE.Fog(0x9bd4f2,190,520);
 const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,900);
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance',alpha:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.0));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=false;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -83,14 +83,15 @@ for(let i=0;i<42;i++){const x=405+(i%6)*13,z=-100+Math.floor(i/6)*28;tree(x,z,.7
 // Distinct regional street fabric and recognizable original landmark silhouettes.
 function regionalBlock(cx,cz,style){
  const stone=style==='historic'?M.stone:style==='modern'?M.tower:M.sidewalk;
- for(let ix=-2;ix<=2;ix++)for(let iz=-2;iz<=2;iz++){
-  if(Math.abs(ix)===2&&Math.abs(iz)===2)continue;
-  const x=cx+ix*31,z=cz+iz*31;
-  if(style==='modern'&&(ix+iz)%2===0)tower(x,z,18,18,34+((ix*iz+9)%4)*8);
-  else villa(x,z,style==='historic'?15:17,style==='historic'?13:15);
+ // Keep the initial world light enough for phones: nine landmark blocks per region.
+ for(let ix=-1;ix<=1;ix++)for(let iz=-1;iz<=1;iz++){
+  if(ix===0&&iz===0)continue;
+  const x=cx+ix*42,z=cz+iz*42;
+  if(style==='modern'&&(ix+iz)%2===0)tower(x,z,16,16,28+((ix*iz+5)%3)*7);
+  else villa(x,z,style==='historic'?13:15,style==='historic'?11:13);
  }
- road(cx,cz,175,10);road(cx,cz,10,175);
- for(const offset of [-62,62]){road(cx+offset,cz,8,155);road(cx,cz+offset,155,8)}
+ road(cx,cz,145,10);road(cx,cz,10,145);
+ for(const offset of [-48,48]){road(cx+offset,cz,7,125);road(cx,cz+offset,125,7)}
 }
 regionalBlock(-300,-245,'modern');
 regionalBlock(0,0,'historic');
@@ -221,7 +222,7 @@ function showSection(section){
  };
  const v=views[section]||views.map;openPanel(v[0],v[1],v[2]);
  document.querySelectorAll('[data-panel-action]').forEach(el=>el.addEventListener('click',()=>panelAction(el.dataset.panelAction)));
- const low=document.querySelector('#low-graphics');if(low)low.addEventListener('change',()=>renderer.setPixelRatio(Math.min(devicePixelRatio,low.checked?.8:1.25)));
+ const low=document.querySelector('#low-graphics');if(low)low.addEventListener('change',()=>renderer.setPixelRatio(Math.min(devicePixelRatio,low.checked?.65:1.0)));
 }
 function panelAction(action){if(action.startsWith('map:')){const destination=maps[Number(action.split(':')[1])];if(destination){const actor=onFoot?avatar:car;actor.position.set(destination[2],0,destination[3]+24);if(onFoot)car.position.set(destination[2]+5,0,destination[3]+24);else avatar.position.set(destination[2]+2,0,destination[3]+18);speed=0;document.querySelector('#location-name').textContent=destination[0];document.querySelector('#world-status').textContent='REGION: '+destination[0].split(' · ')[0]}closePanel();return}if(action==='vehicle'){closePanel();return}if(action==='tuning'){openPanel('VEHICLE SETUP','GARAGE',item('Paint finish','Midnight graphite','paint')+item('Wheel setup','Luxury multi-spoke','wheels'));return}if(action.startsWith('event:')){openPanel('DRIVE SESSION','EVENT CONTROL','<p class="panel-note">Free-drive session ready. Follow the boulevard and explore the estate district.</p>'+item('Start driving','Return to the open world','practice','START'));return}if(action==='practice'){closePanel();return}openPanel('ACCOUNT SERVICES','CLOUD BACKEND','<p class="panel-note">Configure APEXLOT Back4App credentials before enabling accounts.</p>')}
 function interact(){if(inBuilding){exitBuilding();return}if(onFoot){if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<4){onFoot=false;avatar.visible=false;car.visible=true;closePanel();return}if(nearby){enterBuilding(nearby);return}}else if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<5){onFoot=true;avatar.visible=true;car.visible=false;avatar.position.set(car.position.x+2,0,car.position.z);avatar.rotation.y=heading;speed=0;closePanel();return}if(nearby){enterBuilding(nearby);return}openPanel('INTERACTION','NO ENTRANCE NEARBY','<p class="panel-note">Drive or walk closer to a marked building entrance.</p>')}
@@ -258,13 +259,26 @@ function update(dt){
 }
 const chaseOffset=new THREE.Vector3();
 let last=performance.now(),fpsFrames=0,fpsTime=0;
-function animate(now){const dt=Math.min((now-last)/1000,.033);last=now;update(dt);
- if(onFoot){const forward=new THREE.Vector3(Math.sin(avatar.rotation.y),0,Math.cos(avatar.rotation.y));const target=avatar.position.clone().add(new THREE.Vector3(0,3.4,0)).add(forward.clone().multiplyScalar(-6));camera.position.lerp(target,.12);camera.lookAt(avatar.position.x,1.2,avatar.position.z)}
- else if(inBuilding&&interiorGroup){const origin=interiorGroup.position;camera.position.lerp(new THREE.Vector3(origin.x+9,4,origin.z+12),.08);camera.lookAt(origin.x,1.4,origin.z)}
- else if(interiorView){const forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));const target=car.position.clone().add(new THREE.Vector3(0,1.95,0)).add(forward.clone().multiplyScalar(3.8));camera.position.lerp(target,.22);camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.55,0)).add(forward.clone().multiplyScalar(24)))}
- else{chaseOffset.set(-Math.sin(heading)*10,5.5,-Math.cos(heading)*10);const target=car.position.clone().add(chaseOffset);camera.position.lerp(target,1-Math.pow(.0005,dt));camera.lookAt(car.position.x,1.1,car.position.z)}
- renderer.render(scene,camera);if(!window.__apexlotFirstFrame){window.__apexlotFirstFrame=true;const boot=document.querySelector('#boot');if(boot)boot.classList.add('done')}fpsFrames++;fpsTime+=dt;if(fpsTime>2){document.querySelector('#world-status').textContent='WORLD: READY';fpsFrames=0;fpsTime=0}requestAnimationFrame(animate)}
+function animate(now){
+ try{
+  const dt=Math.min((now-last)/1000,.033);last=now;update(dt);
+  if(onFoot){const forward=new THREE.Vector3(Math.sin(avatar.rotation.y),0,Math.cos(avatar.rotation.y));const target=avatar.position.clone().add(new THREE.Vector3(0,3.4,0)).add(forward.clone().multiplyScalar(-6));camera.position.lerp(target,.12);camera.lookAt(avatar.position.x,1.2,avatar.position.z)}
+  else if(inBuilding&&interiorGroup){const origin=interiorGroup.position;camera.position.lerp(new THREE.Vector3(origin.x+9,4,origin.z+12),.08);camera.lookAt(origin.x,1.4,origin.z)}
+  else if(interiorView){const forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));const target=car.position.clone().add(new THREE.Vector3(0,1.95,0)).add(forward.clone().multiplyScalar(3.8));camera.position.lerp(target,.22);camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.55,0)).add(forward.clone().multiplyScalar(24)))}
+  else{chaseOffset.set(-Math.sin(heading)*10,5.5,-Math.cos(heading)*10);const target=car.position.clone().add(chaseOffset);camera.position.lerp(target,1-Math.pow(.0005,dt));camera.lookAt(car.position.x,1.1,car.position.z)}
+  renderer.render(scene,camera);
+  if(!window.__apexlotFirstFrame){window.__apexlotFirstFrame=true;const boot=document.querySelector('#boot');if(boot)boot.classList.add('done')}
+  fpsFrames++;fpsTime+=dt;if(fpsTime>2){document.querySelector('#world-status').textContent='WORLD: READY';fpsFrames=0;fpsTime=0}
+ }catch(error){
+  console.error('[APEXLOT] Frame loop failed.',error);
+  const boot=document.querySelector('#boot'),status=document.querySelector('#boot-status');
+  if(status)status.textContent='3D ENGINE ERROR · RELOAD THE GAME';
+  if(boot)boot.classList.add('boot-error');
+  return;
+ }
+ requestAnimationFrame(animate)
+}
 requestAnimationFrame(animate);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25))});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.0))});
 document.querySelector('#clock').textContent='SUNNY / 12:00';
 // Splash dismissal is driven by the first successful rendered frame.
