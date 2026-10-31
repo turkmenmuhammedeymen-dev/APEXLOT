@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+import * as THREE from 'three';
 
 const canvas=document.querySelector('#world');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bb8c4);scene.fog=new THREE.Fog(0x9bb8c4,85,260);
