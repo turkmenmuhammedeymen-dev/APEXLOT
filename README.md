@@ -57,3 +57,22 @@ The project now has a Vite + TypeScript build layer while preserving the existin
 - npm run server
 
 Copy .env.example to .env.local and configure only public Parse Application ID and JavaScript Key when connecting Back4App.
+
+
+## Sunshore City driving update
+
+The current scene has been upgraded with a bright daytime environment, a larger boulevard grid, planted streets, original procedural high-rise blocks, villas and manor-style properties. A luxury long-wheelbase APEXLOT sedan prototype now has exterior body details and a visible cabin layout.
+
+### Driving and interaction
+- Arrow keys / WASD: steering and throttle/reverse.
+- Space: brake.
+- C or the camera button: toggle chase and cockpit viewpoints.
+- E: interact near a building entrance; inside, E exits.
+- Number keys 1–5: choose a displayed elevator floor while inside.
+- Mobile touch steering and pedals remain available.
+
+### Honest feature status
+This is still a procedural prototype, not a finished photorealistic city. Building interiors and elevator floor selection are currently interaction/visual prototypes, not complete furnished multi-floor architectural simulations. The sedan is an original placeholder design and is not an exact Mercedes-Maybach reproduction or a licensed Mercedes asset. Detailed Blender vehicle assets, true collision/vehicle physics, pedestrian mode, elevator animation, full interior floor layouts and device-level performance testing remain future work.
+
+### Performance changes
+The renderer now uses a capped pixel ratio, disables expensive real-time shadows, and uses lighter scene settings by default. Actual FPS and thermal performance must still be measured on target devices.
