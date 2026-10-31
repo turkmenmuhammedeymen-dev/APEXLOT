@@ -9,14 +9,14 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div id="boot" class="boot"><div class="boot-mark">A<span>/</span>L</div><div class="boot-line"><i></i></div><small>WORLD SYSTEMS INITIALIZING</small></div>
+  <div id="boot" class="boot"><div class="boot-mark">A<span>/</span>L</div><div class="boot-line"><i></i></div><small id="boot-status">WORLD SYSTEMS INITIALIZING</small></div>
   <main id="game-shell" class="game-shell">
     <canvas id="world" aria-label="APEXLOT 3D sürüş dünyası"></canvas>
     <div class="vignette"></div>
     <header class="topbar">
       <a class="brand" href="#" aria-label="APEXLOT ana sayfa"><b>APEX<span>LOT</span></b><small>DRIVE BEYOND</small></a>
       <div class="top-status"><span class="live-dot"></span><span id="world-status">WORLD: READY</span><span class="status-divider"></span><span id="clock">DAY / 12:00</span></div>
-      <div class="top-tools"><button class="icon-button" id="camera-toggle" aria-label="Kamera görünümünü değiştir">◉</button><button class="icon-button" id="settings-open" aria-label="Ayarlar">⚙</button></div>
+      <div class="top-tools"><span id="camera-mode" class="camera-mode">CHASE VIEW</span><button class="icon-button" id="camera-toggle" aria-label="Kamera görünümünü değiştir">◉</button><button class="icon-button" id="settings-open" aria-label="Ayarlar">⚙</button></div>
     </header>
     <section class="hud">
       <div class="speed-card"><div class="speed-label">SPEED <span>KM/H</span></div><div class="speed-value" id="speed">000</div><div class="gear-line">GEAR <b id="gear">N</b><span id="drive-mode">FREE DRIVE</span></div></div>
