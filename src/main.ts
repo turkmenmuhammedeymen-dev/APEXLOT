@@ -1,4 +1,4 @@
-import "./styles/base.css";
+import "./styles/base.css";\n\ndeclare global {\n  interface Window { __apexlotFirstFrame?: boolean; }\n}
 import { initializeParse } from "./services/parseClient";
 
 const boot = document.querySelector<HTMLElement>("#boot");
