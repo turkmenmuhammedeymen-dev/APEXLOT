@@ -1,6 +1,25 @@
 import * as THREE from 'three';
 
 const canvas=document.querySelector('#world');
+// Check the browser's required WebGL2 capability before Three.js tries to allocate it.
+// Older Intel drivers may expose WebGL1 only; Three.js r180 requires WebGL2.
+const capabilityCanvas=document.createElement('canvas');
+let webgl2Available=false;
+try { webgl2Available=!!capabilityCanvas.getContext('webgl2',{failIfMajorPerformanceCaveat:true}); } catch {}
+if(!webgl2Available){
+ const ctx=canvas?.getContext('2d');
+ if(ctx){
+  const w=canvas.width= Math.max(320,innerWidth*devicePixelRatio);
+  const h=canvas.height= Math.max(240,innerHeight*devicePixelRatio);
+  ctx.fillStyle='#090d12';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#d8ff4f';ctx.font='900 42px sans-serif';ctx.fillText('APEXLOT',Math.max(28,w*.08),h*.35);
+  ctx.fillStyle='#edf4f8';ctx.font='600 18px sans-serif';ctx.fillText('3D GRAPHICS NOT AVAILABLE',Math.max(28,w*.08),h*.35+48);
+  ctx.fillStyle='#9aa8b3';ctx.font='14px sans-serif';
+  ctx.fillText('This browser or graphics driver does not support WebGL 2.',Math.max(28,w*.08),h*.35+82);
+  ctx.fillText('Update the graphics driver or try a browser with WebGL 2 enabled.',Math.max(28,w*.08),h*.35+108);
+ }
+ throw new Error('WebGL 2 is unavailable. APEXLOT needs a compatible graphics driver.');
+}
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x83c9ef);
 scene.fog=new THREE.Fog(0x9bd4f2,190,520);
