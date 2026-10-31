@@ -243,8 +243,13 @@ function update(dt){
  const steeringStrength=(.35+Math.min(Math.abs(speed)/27,1)*.9);
  heading+=steer*steeringStrength*dt*(speed>=0?1:-1);
  car.rotation.y=heading;
+ const previousX=car.position.x,previousZ=car.position.z;
  car.position.x+=Math.sin(heading)*speed*dt;
  car.position.z+=Math.cos(heading)*speed*dt;
+ // Conservative world/building collision response keeps the car inside the playable landmass.
+ let blocked=Math.abs(car.position.x)>438||Math.abs(car.position.z)>438;
+ if(!blocked)for(const building of interactables){if(Math.hypot(car.position.x-building.x,car.position.z-building.z)<11){blocked=true;break}}
+ if(blocked){car.position.x=previousX;car.position.z=previousZ;speed*=-.12}
  nearby=null;let best=Infinity;
  for(const b of interactables){const dx=car.position.x-b.x,dz=car.position.z-b.doorZ;const dist=Math.hypot(dx,dz);if(dist<best){best=dist;nearby=b}}
  document.querySelector('#interaction-hint').textContent=best<12?'E  ENTER / INTERACT':'E  INTERACT';
