@@ -154,6 +154,49 @@ avatar.visible=false;
 let onFoot=false,walkPhase=0;
 
 
+
+/* Lightweight ambient traffic and pedestrians: deterministic, local simulation actors. */
+const trafficCars=[];
+const trafficPaints=[mat(0x9d3430,.3,.45),mat(0x263f55,.28,.55),mat(0xd4d0c3,.3,.4),mat(0x384b3b,.35,.35)];
+for(let i=0;i<10;i++){
+ const vehicle=group(scene,0,0,0),paintwork=trafficPaints[i%trafficPaints.length];
+ box(vehicle,1.75,.55,3.8,paintwork,0,.72,0);
+ box(vehicle,1.5,.65,1.8,M.glass,0,1.25,-.15);
+ for(const wx of [-.91,.91])for(const wz of [-1.2,1.2]){
+  const tire=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.16,10),M.tire);tire.rotation.z=Math.PI/2;tire.position.set(wx,.34,wz);vehicle.add(tire);
+ }
+ trafficCars.push({mesh:vehicle,phase:i/10*Math.PI*2,lane:i%2?4:-4,route:i%3,rate:5.5+(i%4)*.7});
+}
+const pedestrians=[];
+const pedestrianMat=mat(0x374b62,.9),pedSkin=mat(0xb98562,.8);
+for(let i=0;i<18;i++){
+ const person=group(scene,0,0,0);
+ box(person,.42,.72,.28,pedestrianMat,0,1.15,0);
+ const face=new THREE.Mesh(new THREE.SphereGeometry(.16,8,7),pedSkin);face.position.y=1.65;person.add(face);
+ const legA=box(person,.14,.55,.16,M.black,-.12,.55,0),legB=box(person,.14,.55,.16,M.black,.12,.55,0);
+ pedestrians.push({mesh:person,phase:i*1.73,center:italyRegions[i%italyRegions.length],radius:24+(i%4)*7,legA,legB});
+}
+function tickAmbient(dt){
+ for(const t of trafficCars){
+  t.phase+=dt*t.rate/34;
+  const hub=italyRegions[t.route];
+  const radius=t.route===0?72:58;
+  const x=hub.x+Math.cos(t.phase)*radius;
+  const z=hub.z+Math.sin(t.phase)*radius*.72+t.lane;
+  t.mesh.position.set(x,0,z);
+  t.mesh.rotation.y=-Math.atan2(Math.cos(t.phase)*radius*.72,-Math.sin(t.phase)*radius);
+ }
+ for(const p of pedestrians){
+  p.phase+=dt*.55;
+  const x=p.center.x+Math.cos(p.phase)*p.radius;
+  const z=p.center.z+Math.sin(p.phase)*p.radius;
+  p.mesh.position.set(x,0,z);
+  p.mesh.rotation.y=-p.phase;
+  p.legA.rotation.x=Math.sin(p.phase*3)*.22;
+  p.legB.rotation.x=-Math.sin(p.phase*3)*.22;
+ }
+}
+
 let speed=0,heading=0,steer=0,interiorView=false,inBuilding=false,nearby=null;
 const keys=new Set();
 addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==='Escape'){if(inBuilding)exitBuilding();else closePanel()}if(e.code==='KeyC')toggleCamera();if(e.code==='KeyE')interact();if(/^Digit[1-9]$/.test(e.code)&&inBuilding)moveElevator(Number(e.code.slice(5)))});
@@ -189,6 +232,7 @@ function exitBuilding(){inBuilding=false;if(interiorGroup){scene.remove(interior
 const originalPanelAction=panelAction;
 panelAction=function(action){if(action.startsWith('floor:')){moveElevator(Number(action.split(':')[1]));return}if(action==='exit'){exitBuilding();return}originalPanelAction(action)};
 function update(dt){
+ tickAmbient(dt);
  if(inBuilding)return;
  if(onFoot){const f=keys.has('KeyW')||keys.has('ArrowUp'),b=keys.has('KeyS')||keys.has('ArrowDown'),l=keys.has('KeyA')||keys.has('ArrowLeft'),r=keys.has('KeyD')||keys.has('ArrowRight');const move=(f?1:0)-(b?1:0);const turn=(r?1:0)-(l?1:0);avatar.rotation.y+=turn*2.3*dt;const pace=(keys.has('ShiftLeft')||keys.has('ShiftRight'))?7:3.8;avatar.position.x+=Math.sin(avatar.rotation.y)*move*pace*dt;avatar.position.z+=Math.cos(avatar.rotation.y)*move*pace*dt;walkPhase+=Math.abs(move)*dt*9;legL.rotation.x=Math.sin(walkPhase)*.55;legR.rotation.x=-Math.sin(walkPhase)*.55;armL.rotation.x=-legL.rotation.x*.7;armR.rotation.x=-legR.rotation.x*.7;nearby=null;let nearest=Infinity;for(const bld of interactables){const d=Math.hypot(avatar.position.x-bld.x,avatar.position.z-bld.doorZ);if(d<nearest){nearest=d;nearby=bld}}document.querySelector('#interaction-hint').textContent=Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<4?'E ENTER CAR':'E INTERACT';return}
  const forward=keys.has('ArrowUp')||keys.has('KeyW'),reverse=keys.has('ArrowDown')||keys.has('KeyS');
