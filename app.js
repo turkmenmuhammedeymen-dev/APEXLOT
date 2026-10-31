@@ -45,6 +45,68 @@ for(const [x,z,h] of [[-126,-126,39],[-84,-126,54],[84,-126,66],[126,-126,48],[-
 for(const [x,z] of [[-126,-47],[-84,-47],[84,-47],[126,-47],[-126,47],[-84,47],[84,47],[126,47]])villa(x,z,18,15);
 mansion(-47,-126);mansion(47,126);villa(-47,126,25,19);villa(47,-126,25,19);
 
+
+/* Connected Italy-inspired regional world. Coordinates are one continuous driveable landmass. */
+const italyRegions=[
+ {name:'MILANO',label:'MILAN · LOMBARDY',x:-300,z:-245,kind:'metro',description:'Northern Italian business district and alpine approach'},
+ {name:'ROMA',label:'ROME · LAZIO',x:0,z:0,kind:'capital',description:'Historic capital quarter, piazzas and ring roads'},
+ {name:'NAPOLI',label:'NAPLES · CAMPANIA',x:245,z:205,kind:'coast',description:'Dense southern city streets and waterfront'},
+ {name:'AMALFI',label:'AMALFI COAST',x:365,z:335,kind:'coast',description:'Cliffside villages, coastal bends and sea views'}
+];
+function highwayBetween(a,b,bend=0){
+ const p0=new THREE.Vector3(a.x,0,a.z),p2=new THREE.Vector3(b.x,0,b.z);
+ const mid=p0.clone().lerp(p2,.5);mid.x+=bend;mid.z-=bend*.42;
+ const steps=28;
+ for(let i=0;i<steps;i++){
+  const t0=i/steps,t1=(i+1)/steps;
+  const q0=p0.clone().multiplyScalar((1-t0)*(1-t0)).add(mid.clone().multiplyScalar(2*(1-t0)*t0)).add(p2.clone().multiplyScalar(t0*t0));
+  const q1=p0.clone().multiplyScalar((1-t1)*(1-t1)).add(mid.clone().multiplyScalar(2*(1-t1)*t1)).add(p2.clone().multiplyScalar(t1*t1));
+  const d=q1.clone().sub(q0),len=d.length(),angle=Math.atan2(d.x,d.z),center=q0.clone().add(q1).multiplyScalar(.5);
+  const seg=box(scene,13,.18,len+1,M.road,center.x,.015,center.z);seg.rotation.y=angle;
+  const stripe=box(scene,.22,.025,len*.72,M.line,center.x,.12,center.z);stripe.rotation.y=angle;
+ }
+}
+highwayBetween(italyRegions[0],italyRegions[1],-20);
+highwayBetween(italyRegions[1],italyRegions[2],22);
+highwayBetween(italyRegions[2],italyRegions[3],-14);
+highwayBetween(italyRegions[0],italyRegions[2],-34);
+
+// Regional terrain: low rolling hills and a broad Tyrrhenian sea along the western/southern edge.
+const hillMat=mat(0x668c55),rockMat=mat(0x8d887b),seaMat=new THREE.MeshStandardMaterial({color:0x278ba7,roughness:.32,metalness:.12});
+for(const [x,z,sx,sz,h] of [[-390,-340,95,75,28],[-390,-80,120,85,34],[-190,-390,90,70,22],[120,350,80,60,18],[300,420,95,75,30],[430,260,65,110,24]]){
+ const hill=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),hillMat);hill.scale.set(sx,h,sz);hill.position.set(x,h-.2,z);scene.add(hill);
+}
+const sea=new THREE.Mesh(new THREE.PlaneGeometry(260,900),seaMat);sea.rotation.x=-Math.PI/2;sea.position.set(485,-.1,80);scene.add(sea);
+const coastRoad=box(scene,12,.18,500,M.road,365,.03,120);coastRoad.rotation.y=-.22;
+for(let i=0;i<42;i++){const x=405+(i%6)*13,z=-100+Math.floor(i/6)*28;tree(x,z,.7+(i%3)*.12)}
+
+// Distinct regional street fabric and recognizable original landmark silhouettes.
+function regionalBlock(cx,cz,style){
+ const stone=style==='historic'?M.stone:style==='modern'?M.tower:M.sidewalk;
+ for(let ix=-2;ix<=2;ix++)for(let iz=-2;iz<=2;iz++){
+  if(Math.abs(ix)===2&&Math.abs(iz)===2)continue;
+  const x=cx+ix*31,z=cz+iz*31;
+  if(style==='modern'&&(ix+iz)%2===0)tower(x,z,18,18,34+((ix*iz+9)%4)*8);
+  else villa(x,z,style==='historic'?15:17,style==='historic'?13:15);
+ }
+ road(cx,cz,175,10);road(cx,cz,10,175);
+ for(const offset of [-62,62]){road(cx+offset,cz,8,155);road(cx,cz+offset,155,8)}
+}
+regionalBlock(-300,-245,'modern');
+regionalBlock(0,0,'historic');
+regionalBlock(245,205,'historic');
+regionalBlock(365,335,'coast');
+function landmarkDome(x,z,r=18){
+ const base=new THREE.Mesh(new THREE.CylinderGeometry(r,r,8,24),M.stone);base.position.set(x,4,z);scene.add(base);
+ const dome=new THREE.Mesh(new THREE.SphereGeometry(r*.82,24,16,0,Math.PI*2,0,Math.PI/2),M.roof);dome.position.set(x,8,z);scene.add(dome);
+ const lantern=box(scene,3,5,3,M.gold,x,8+r*.78,z);
+}
+landmarkDome(-300,-245,15); // Milan-inspired civic dome
+landmarkDome(0,-10,20); // Rome-inspired basilica silhouette
+const amphitheatre=new THREE.Mesh(new THREE.CylinderGeometry(27,31,12,32,1,true),M.stone);amphitheatre.position.set(35,6,35);scene.add(amphitheatre);
+const coastCliffs=mat(0x9c927b);
+for(let i=0;i<9;i++){const cliff=new THREE.Mesh(new THREE.ConeGeometry(22+i%3*5,48+i%4*8,7),coastCliffs);cliff.position.set(405+i*10,18,280+i*17);scene.add(cliff)}
+
 // Luxury flagship sedan: original APEXLOT design with long-wheelbase proportions and detailed cabin.
 const car=group(scene,0,0,25);
 const paint=mat(0x202a32,.2,.78), paintDark=mat(0x10171d,.22,.7), leather=mat(0x9b8062,.72), trim=mat(0x252a2d,.25,.8);
@@ -103,7 +165,7 @@ function openPanel(title,kicker,html){document.querySelector('#panel-title').tex
 function closePanel(){document.querySelector('#panel').classList.remove('open')}
 document.querySelector('#panel-close').addEventListener('click',closePanel);
 function item(title,desc,action,label='OPEN'){return '<div class="panel-item"><div><b>'+title+'</b><small>'+desc+'</small></div><button class="action-button" data-panel-action="'+action+'">'+label+'</button></div>'}
-const maps=[['Sunshore City','Sunny coast and skyline'],['Palm Avenue','Luxury villas and mansions'],['Skyline District','Skyscrapers and elevators'],['Marina Boulevard','Waterfront promenade'],['Garden Estates','Private homes and gardens']];
+const maps=italyRegions.map(r=>[r.label,r.description,r.x,r.z]);
 document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.action)));
 document.querySelector('#settings-open').addEventListener('click',()=>showSection('settings'));
 function showSection(section){
@@ -118,7 +180,7 @@ function showSection(section){
  document.querySelectorAll('[data-panel-action]').forEach(el=>el.addEventListener('click',()=>panelAction(el.dataset.panelAction)));
  const low=document.querySelector('#low-graphics');if(low)low.addEventListener('change',()=>renderer.setPixelRatio(Math.min(devicePixelRatio,low.checked?.8:1.25)));
 }
-function panelAction(action){if(action.startsWith('map:')){document.querySelector('#location-name').textContent=maps[Number(action.split(':')[1])][0].toUpperCase();closePanel();return}if(action==='vehicle'){closePanel();return}if(action==='tuning'){openPanel('VEHICLE SETUP','GARAGE',item('Paint finish','Midnight graphite','paint')+item('Wheel setup','Luxury multi-spoke','wheels'));return}if(action.startsWith('event:')){openPanel('DRIVE SESSION','EVENT CONTROL','<p class="panel-note">Free-drive session ready. Follow the boulevard and explore the estate district.</p>'+item('Start driving','Return to the open world','practice','START'));return}if(action==='practice'){closePanel();return}openPanel('ACCOUNT SERVICES','CLOUD BACKEND','<p class="panel-note">Configure APEXLOT Back4App credentials before enabling accounts.</p>')}
+function panelAction(action){if(action.startsWith('map:')){const destination=maps[Number(action.split(':')[1])];if(destination){const actor=onFoot?avatar:car;actor.position.set(destination[2],0,destination[3]+24);if(onFoot)car.position.set(destination[2]+5,0,destination[3]+24);else avatar.position.set(destination[2]+2,0,destination[3]+18);speed=0;document.querySelector('#location-name').textContent=destination[0];document.querySelector('#world-status').textContent='REGION: '+destination[0].split(' · ')[0]}closePanel();return}if(action==='vehicle'){closePanel();return}if(action==='tuning'){openPanel('VEHICLE SETUP','GARAGE',item('Paint finish','Midnight graphite','paint')+item('Wheel setup','Luxury multi-spoke','wheels'));return}if(action.startsWith('event:')){openPanel('DRIVE SESSION','EVENT CONTROL','<p class="panel-note">Free-drive session ready. Follow the boulevard and explore the estate district.</p>'+item('Start driving','Return to the open world','practice','START'));return}if(action==='practice'){closePanel();return}openPanel('ACCOUNT SERVICES','CLOUD BACKEND','<p class="panel-note">Configure APEXLOT Back4App credentials before enabling accounts.</p>')}
 function interact(){if(inBuilding){exitBuilding();return}if(onFoot){if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<4){onFoot=false;avatar.visible=false;car.visible=true;closePanel();return}if(nearby){enterBuilding(nearby);return}}else if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<5){onFoot=true;avatar.visible=true;car.visible=false;avatar.position.set(car.position.x+2,0,car.position.z);avatar.rotation.y=heading;speed=0;closePanel();return}if(nearby){enterBuilding(nearby);return}openPanel('INTERACTION','NO ENTRANCE NEARBY','<p class="panel-note">Drive or walk closer to a marked building entrance.</p>')}
 let interiorGroup=null,elevatorFloor=1;
 function enterBuilding(b){inBuilding=true;const entry=onFoot?avatar.position:car.position;interiorGroup=group(scene,entry.x,0,entry.z);box(interiorGroup,16,.2,16,M.stone,0,0,0);box(interiorGroup,16,5,.2,M.white,0,2.5,-8);box(interiorGroup,.2,5,16,M.white,-8,2.5,0);box(interiorGroup,.2,5,16,M.white,8,2.5,0);box(interiorGroup,16,5,.2,M.white,0,2.5,8);box(interiorGroup,4,.25,2,M.wood,-3,.3,-3);box(interiorGroup,2,.8,1.4,leather,-3,.8,-3);box(interiorGroup,2,.8,1.4,leather,-1,.8,-3);box(interiorGroup,2,.2,1,M.wood,3,.2,-3);box(interiorGroup,1.2,2.4,.12,M.door,0,1.2,7.85);box(interiorGroup,2.5,2.5,2,M.chrome,5,1.25,5);document.querySelector('#location-name').textContent=b.name+' / INTERIOR';openPanel('BUILDING INTERIOR','ELEVATOR · FLOOR 1','<p class="panel-note">You entered '+b.name+'. Select a floor to ride the elevator. Press E to leave.</p>'+[1,2,3,4,5].map(n=>item('Floor '+n,'Elevator destination','floor:'+n,'GO')).join('')+item('Exit building','Return outside','exit','EXIT'));document.querySelectorAll('[data-panel-action]').forEach(el=>el.addEventListener('click',()=>panelAction(el.dataset.panelAction)))}
