@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090d12">
+  <meta name="description" content="APEXLOT — özgün açık dünya sürüş ve park simülasyonu.">
+  <title>APEXLOT — Open World Driving</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="boot" class="boot"><div class="boot-mark">A<span>/</span>L</div><div class="boot-line"><i></i></div><small>WORLD SYSTEMS INITIALIZING</small></div>
+  <main id="game-shell" class="game-shell">
+    <canvas id="world" aria-label="APEXLOT 3D sürüş dünyası"></canvas>
+    <div class="vignette"></div>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="APEXLOT ana sayfa"><b>APEX<span>LOT</span></b><small>DRIVE BEYOND</small></a>
+      <div class="top-status"><span class="live-dot"></span><span id="world-status">WORLD: READY</span><span class="status-divider"></span><span id="clock">DAY / 12:00</span></div>
+      <button class="icon-button" id="settings-open" aria-label="Ayarlar">⚙</button>
+    </header>
+    <section class="hud">
+      <div class="speed-card"><div class="speed-label">SPEED <span>KM/H</span></div><div class="speed-value" id="speed">000</div><div class="gear-line">GEAR <b id="gear">N</b><span id="drive-mode">FREE DRIVE</span></div></div>
+      <div class="location-card"><small>YOUR LOCATION</small><b id="location-name">APEX CITY / CENTRAL</b><span>OPEN WORLD SESSION</span></div>
+    </section>
+    <nav class="quick-actions" aria-label="Oyun kontrolleri">
+      <button data-action="map">▦<span>MAP</span></button><button data-action="garage">◈<span>GARAGE</span></button><button data-action="events">✦<span>EVENTS</span></button><button data-action="profile">◎<span>PROFILE</span></button>
+    </nav>
+    <section class="drive-controls" aria-label="Sürüş kontrolleri">
+      <div class="steering"><button data-key="ArrowLeft" aria-label="Sola dön">◀</button><button data-key="ArrowRight" aria-label="Sağa dön">▶</button></div>
+      <div class="pedals"><button data-key="Space" class="brake">BRAKE</button><button data-key="ArrowUp" class="accelerate">ACCEL</button></div>
+    </section>
+    <aside id="panel" class="panel" aria-live="polite">
+      <div class="panel-head"><div><small id="panel-kicker">APEXLOT SYSTEM</small><h2 id="panel-title">World Menu</h2></div><button id="panel-close" class="close-button" aria-label="Kapat">×</button></div>
+      <div id="panel-content"></div>
+    </aside>
+    <div class="crosshair" aria-hidden="true"></div>
+    <footer class="bottom-hint"><span>WASD / ARROWS <i>DRIVE</i></span><span>SPACE <i>BRAKE</i></span><span>ESC <i>MENU</i></span></footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
