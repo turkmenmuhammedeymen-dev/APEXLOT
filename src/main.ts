@@ -18,16 +18,25 @@ try {
   sceneReady = true;
 } catch (error) {
   console.error("[APEXLOT] Game startup failed.", error);
-  if (status) status.textContent = "WORLD LOAD FAILED · CHECK CONNECTION AND RELOAD";
+  if (status) status.textContent = "WORLD LOAD FAILED · RELOAD THE GAME";
   boot?.classList.add("boot-error");
 }
 
 // The game runtime removes the overlay after its first rendered frame.
 // If initialization never reaches that point, show a useful error instead of spinning forever.
 window.setTimeout(() => {
-  if (!sceneReady && status) status.textContent = "GAME MODULE COULD NOT START · RELOAD";
-  if (sceneReady && boot && !boot.classList.contains("done") && status) {
-    status.textContent = "WORLD INITIALIZATION IS TAKING TOO LONG · RELOAD";
-    boot.classList.add("boot-error");
+  if (window.__apexlotFirstFrame) return;
+  if (status) status.textContent = sceneReady
+    ? "3D WORLD DID NOT RESPOND · CHECK DEVICE GRAPHICS AND RELOAD"
+    : "GAME MODULE COULD NOT START · CHECK CONNECTION AND RELOAD";
+  boot?.classList.add("boot-error");
+  if (boot && !boot.querySelector("[data-boot-reload]")) {
+    const reload = document.createElement("button");
+    reload.type = "button";
+    reload.dataset.bootReload = "true";
+    reload.textContent = "RELOAD GAME";
+    reload.style.cssText = "margin-top:8px;padding:12px 22px;border:1px solid #d8ff4f;background:#d8ff4f;color:#10150a;font:600 12px monospace;cursor:pointer";
+    reload.addEventListener("click", () => window.location.reload());
+    boot.append(reload);
   }
-}, 15000);
+}, 12000);
