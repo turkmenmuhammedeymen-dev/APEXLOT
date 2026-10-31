@@ -85,3 +85,9 @@ The renderer now uses a capped pixel ratio, disables expensive real-time shadows
 - This is an original scaled game-world interpretation, not a surveyed 1:1 reconstruction of Italy or a licensed GIS/terrain dataset. Accurate street networks, elevation data, architectural asset packs, streaming/LOD and full-scale regional expansion are still required.
 - The character is currently a procedural stylized placeholder; walk/run controls and enter/exit vehicle flow are early gameplay foundations, not motion-captured production animation.
 - Building interiors remain a single-room interaction prototype; multi-floor furnished layouts and a moving elevator are not complete.
+
+### Ambient world systems (prototype)
+- Regional ambient vehicles circulate around the four hubs.
+- Pedestrian agents walk along simple deterministic local loops.
+- Driving now has conservative world-edge and building-proximity collision response.
+- These are lightweight procedural systems; they are not yet lane-aware traffic AI, pedestrian navigation, advanced vehicle dynamics or production collision meshes.
