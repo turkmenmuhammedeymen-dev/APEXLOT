@@ -24,8 +24,19 @@ try {
   sceneReady = true;
 } catch (error) {
   console.error("[APEXLOT] Game startup failed.", error);
-  if (status) status.textContent = "WORLD LOAD FAILED · RELOAD THE GAME";
+  if (status) status.textContent = error instanceof Error && error.message.includes("WebGL 2")
+    ? "3D GRAPHICS UNSUPPORTED · UPDATE YOUR INTEL GRAPHICS DRIVER OR USE A WEBGL 2 DEVICE"
+    : "WORLD LOAD FAILED · RELOAD THE GAME";
   boot?.classList.add("boot-error");
+  if (boot && !boot.querySelector("[data-boot-reload]")) {
+    const reload = document.createElement("button");
+    reload.type = "button";
+    reload.dataset.bootReload = "true";
+    reload.textContent = "RELOAD GAME";
+    reload.style.cssText = "margin-top:8px;padding:12px 22px;border:1px solid #d8ff4f;background:#d8ff4f;color:#10150a;font:600 12px monospace;cursor:pointer";
+    reload.addEventListener("click", () => window.location.reload());
+    boot.append(reload);
+  }
 }
 
 // The game runtime removes the overlay after its first rendered frame.
