@@ -78,7 +78,7 @@ const keys=new Set();
 addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==='Escape'){if(inBuilding)exitBuilding();else closePanel()}if(e.code==='KeyC')toggleCamera();if(e.code==='KeyE')interact();if(/^Digit[1-9]$/.test(e.code)&&inBuilding)moveElevator(Number(e.code.slice(5)))});
 addEventListener('keyup',e=>keys.delete(e.code));
 document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;const down=e=>{e.preventDefault();keys.add(k)},up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointerleave',up);b.addEventListener('pointercancel',up)});
-function toggleCamera(){interiorView=!interiorView;document.querySelector('#camera-mode').textContent=interiorView?'CABIN VIEW':'CHASE VIEW'}
+function toggleCamera(){interiorView=!interiorView;const label=document.querySelector('#camera-mode');if(label)label.textContent=interiorView?'CABIN VIEW':'CHASE VIEW'}
 document.querySelector('#camera-toggle').addEventListener('click',toggleCamera);
 function openPanel(title,kicker,html){document.querySelector('#panel-title').textContent=title;document.querySelector('#panel-kicker').textContent=kicker;document.querySelector('#panel-content').innerHTML=html;document.querySelector('#panel').classList.add('open')}
 function closePanel(){document.querySelector('#panel').classList.remove('open')}
@@ -135,4 +135,4 @@ function animate(now){const dt=Math.min((now-last)/1000,.033);last=now;update(dt
 requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25))});
 document.querySelector('#clock').textContent='SUNNY / 12:00';
-setTimeout(()=>document.querySelector('#boot').classList.add('done'),700);
+const bootOverlay=document.querySelector('#boot');\nfunction finishBoot(){if(bootOverlay)bootOverlay.classList.add('done')}\n// Hide the splash as soon as the game loop is running; also recover from delayed startup.\nsetTimeout(finishBoot,700);\nsetTimeout(()=>{if(bootOverlay&&!bootOverlay.classList.contains('done')){const status=document.querySelector('#boot-status');if(status)status.textContent='STARTUP RECOVERY';finishBoot()}},8000);
