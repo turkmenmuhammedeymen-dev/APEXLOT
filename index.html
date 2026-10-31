@@ -16,11 +16,11 @@
     <header class="topbar">
       <a class="brand" href="#" aria-label="APEXLOT ana sayfa"><b>APEX<span>LOT</span></b><small>DRIVE BEYOND</small></a>
       <div class="top-status"><span class="live-dot"></span><span id="world-status">WORLD: READY</span><span class="status-divider"></span><span id="clock">DAY / 12:00</span></div>
-      <button class="icon-button" id="settings-open" aria-label="Ayarlar">⚙</button>
+      <div class="top-tools"><button class="icon-button" id="camera-toggle" aria-label="Kamera görünümünü değiştir">◉</button><button class="icon-button" id="settings-open" aria-label="Ayarlar">⚙</button></div>
     </header>
     <section class="hud">
       <div class="speed-card"><div class="speed-label">SPEED <span>KM/H</span></div><div class="speed-value" id="speed">000</div><div class="gear-line">GEAR <b id="gear">N</b><span id="drive-mode">FREE DRIVE</span></div></div>
-      <div class="location-card"><small>YOUR LOCATION</small><b id="location-name">APEX CITY / CENTRAL</b><span>OPEN WORLD SESSION</span></div>
+      <div class="location-card"><small>YOUR LOCATION</small><b id="location-name">SUNSHORE CITY / CENTRAL</b><span>OPEN WORLD SESSION</span></div>
     </section>
     <nav class="quick-actions" aria-label="Oyun kontrolleri">
       <button data-action="map">▦<span>MAP</span></button><button data-action="garage">◈<span>GARAGE</span></button><button data-action="events">✦<span>EVENTS</span></button><button data-action="profile">◎<span>PROFILE</span></button>
@@ -34,7 +34,7 @@
       <div id="panel-content"></div>
     </aside>
     <div class="crosshair" aria-hidden="true"></div>
-    <footer class="bottom-hint"><span>WASD / ARROWS <i>DRIVE</i></span><span>SPACE <i>BRAKE</i></span><span>ESC <i>MENU</i></span></footer>
+    <footer class="bottom-hint"><span>WASD / ARROWS <i>DRIVE</i></span><span>SPACE <i>BRAKE</i></span><span>C <i>CAMERA</i></span><span>E <i id="interaction-hint">INTERACT</i></span></footer>
   </main>
   <script type="module" src="/src/main.ts"></script>
 </body>
