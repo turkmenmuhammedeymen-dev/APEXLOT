@@ -76,3 +76,12 @@ This is still a procedural prototype, not a finished photorealistic city. Buildi
 
 ### Performance changes
 The renderer now uses a capped pixel ratio, disables expensive real-time shadows, and uses lighter scene settings by default. Actual FPS and thermal performance must still be measured on target devices.
+
+ 
+## Connected Italy-inspired world foundation
+- The current procedural world now includes four linked regional destinations: Milan, Rome, Naples and the Amalfi Coast.
+- Curved intercity highway segments physically connect the regional hubs; map selection moves the active player/vehicle to the selected region.
+- Each hub has a distinct procedural street/building layout and original landmark silhouettes. Rolling terrain forms and a sea/coastline visual zone establish regional variation.
+- This is an original scaled game-world interpretation, not a surveyed 1:1 reconstruction of Italy or a licensed GIS/terrain dataset. Accurate street networks, elevation data, architectural asset packs, streaming/LOD and full-scale regional expansion are still required.
+- The character is currently a procedural stylized placeholder; walk/run controls and enter/exit vehicle flow are early gameplay foundations, not motion-captured production animation.
+- Building interiors remain a single-room interaction prototype; multi-floor furnished layouts and a moving elevator are not complete.
