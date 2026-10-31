@@ -71,7 +71,26 @@ for(const x of [-.72,.72]){box(car,.08,.08,2.2,M.chrome,x,1.29,-.25);box(car,.13
 for(const x of [-.48,.48]){box(car,.48,.65,.48,leather,x,1.35,-.62);box(car,.48,.55,.45,leather,x,1.27,.42)}
 box(car,1.62,.25,.42,trim,0,1.38,1.02);box(car,.16,.16,.16,M.chrome,-.53,1.46,.99);
 const steering=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,8,20),M.chrome);steering.position.set(-.55,1.55,.88);car.add(steering);
+
 car.position.set(0,0,25);
+
+// On-foot avatar: original stylized suited character, with separate movement state.
+const avatar=group(scene,0,0,18);
+const suit=mat(0x172432,.72),shirt=mat(0xe8e5dc,.8),skin=mat(0xb98562,.8),shoe=mat(0x17191d,.65),hair=mat(0x29211d,.9);
+function limb(parent,w,h,d,material,x,y,z){return box(parent,w,h,d,material,x,y,z)}
+limb(avatar,.62,.82,.34,suit,0,1.15,0);
+limb(avatar,.42,.18,.3,shirt,0,1.62,.015);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),skin);head.position.set(0,1.82,0);avatar.add(head);
+const hairCap=new THREE.Mesh(new THREE.SphereGeometry(.225,12,8,0,Math.PI*2,0,Math.PI*.55),hair);hairCap.position.set(0,1.91,0);avatar.add(hairCap);
+const tie=limb(avatar,.09,.34,.035,M.black,0,1.38,.18);
+const armL=group(avatar,-.39,1.45,0),armR=group(avatar,.39,1.45,0);
+limb(armL,.17,.62,.19,suit,0,-.25,0);limb(armR,.17,.62,.19,suit,0,-.25,0);
+const legL=group(avatar,-.17,.78,0),legR=group(avatar,.17,.78,0);
+limb(legL,.2,.65,.23,suit,0,-.27,0);limb(legR,.2,.65,.23,suit,0,-.27,0);
+limb(legL,.22,.13,.36,shoe,0,-.62,.06);limb(legR,.22,.13,.36,shoe,0,-.62,.06);
+avatar.visible=false;
+let onFoot=false,walkPhase=0;
+
 
 let speed=0,heading=0,steer=0,interiorView=false,inBuilding=false,nearby=null;
 const keys=new Set();
@@ -100,7 +119,7 @@ function showSection(section){
  const low=document.querySelector('#low-graphics');if(low)low.addEventListener('change',()=>renderer.setPixelRatio(Math.min(devicePixelRatio,low.checked?.8:1.25)));
 }
 function panelAction(action){if(action.startsWith('map:')){document.querySelector('#location-name').textContent=maps[Number(action.split(':')[1])][0].toUpperCase();closePanel();return}if(action==='vehicle'){closePanel();return}if(action==='tuning'){openPanel('VEHICLE SETUP','GARAGE',item('Paint finish','Midnight graphite','paint')+item('Wheel setup','Luxury multi-spoke','wheels'));return}if(action.startsWith('event:')){openPanel('DRIVE SESSION','EVENT CONTROL','<p class="panel-note">Free-drive session ready. Follow the boulevard and explore the estate district.</p>'+item('Start driving','Return to the open world','practice','START'));return}if(action==='practice'){closePanel();return}openPanel('ACCOUNT SERVICES','CLOUD BACKEND','<p class="panel-note">Configure APEXLOT Back4App credentials before enabling accounts.</p>')}
-function interact(){if(inBuilding){exitBuilding();return}if(nearby){enterBuilding(nearby);return}openPanel('INTERACTION','NO ENTRANCE NEARBY','<p class="panel-note">Drive or walk closer to a marked building entrance.</p>')}
+function interact(){if(inBuilding){exitBuilding();return}if(onFoot){if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<4){onFoot=false;avatar.visible=false;car.visible=true;closePanel();return}if(nearby){enterBuilding(nearby);return}}else if(Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<5){onFoot=true;avatar.visible=true;car.visible=false;avatar.position.set(car.position.x+2,0,car.position.z);avatar.rotation.y=heading;speed=0;closePanel();return}if(nearby){enterBuilding(nearby);return}openPanel('INTERACTION','NO ENTRANCE NEARBY','<p class="panel-note">Drive or walk closer to a marked building entrance.</p>')}
 let interiorGroup=null,elevatorFloor=1;
 function enterBuilding(b){inBuilding=true;interiorGroup=group(scene,car.position.x,0,car.position.z);box(interiorGroup,16,.2,16,M.stone,0,0,0);box(interiorGroup,16,5,.2,M.white,0,2.5,-8);box(interiorGroup,.2,5,16,M.white,-8,2.5,0);box(interiorGroup,.2,5,16,M.white,8,2.5,0);box(interiorGroup,16,5,.2,M.white,0,2.5,8);box(interiorGroup,4,.25,2,M.wood,-3,.3,-3);box(interiorGroup,2,.8,1.4,leather,-3,.8,-3);box(interiorGroup,2,.8,1.4,leather,-1,.8,-3);box(interiorGroup,2,.2,1,M.wood,3,.2,-3);box(interiorGroup,1.2,2.4,.12,M.door,0,1.2,7.85);box(interiorGroup,2.5,2.5,2,M.chrome,5,1.25,5);document.querySelector('#location-name').textContent=b.name+' / INTERIOR';openPanel('BUILDING INTERIOR','ELEVATOR · FLOOR 1','<p class="panel-note">You entered '+b.name+'. Select a floor to ride the elevator. Press E to leave.</p>'+[1,2,3,4,5].map(n=>item('Floor '+n,'Elevator destination','floor:'+n,'GO')).join('')+item('Exit building','Return outside','exit','EXIT'));document.querySelectorAll('[data-panel-action]').forEach(el=>el.addEventListener('click',()=>panelAction(el.dataset.panelAction)))}
 function moveElevator(n){elevatorFloor=n;openPanel('ELEVATOR','FLOOR '+n,'<p class="panel-note">Elevator arrived at floor '+n+'. Press E to exit the building.</p>'+[1,2,3,4,5].map(k=>item('Floor '+k,'Select destination','floor:'+k,'GO')).join('')+item('Exit building','Return outside','exit','EXIT'));document.querySelectorAll('[data-panel-action]').forEach(el=>el.addEventListener('click',()=>panelAction(el.dataset.panelAction)))}
@@ -109,6 +128,7 @@ const originalPanelAction=panelAction;
 panelAction=function(action){if(action.startsWith('floor:')){moveElevator(Number(action.split(':')[1]));return}if(action==='exit'){exitBuilding();return}originalPanelAction(action)};
 function update(dt){
  if(inBuilding)return;
+ if(onFoot){const f=keys.has('KeyW')||keys.has('ArrowUp'),b=keys.has('KeyS')||keys.has('ArrowDown'),l=keys.has('KeyA')||keys.has('ArrowLeft'),r=keys.has('KeyD')||keys.has('ArrowRight');const move=(f?1:0)-(b?1:0);const turn=(r?1:0)-(l?1:0);avatar.rotation.y+=turn*2.3*dt;const pace=(keys.has('ShiftLeft')||keys.has('ShiftRight'))?7:3.8;avatar.position.x+=Math.sin(avatar.rotation.y)*move*pace*dt;avatar.position.z+=Math.cos(avatar.rotation.y)*move*pace*dt;walkPhase+=Math.abs(move)*dt*9;legL.rotation.x=Math.sin(walkPhase)*.55;legR.rotation.x=-Math.sin(walkPhase)*.55;armL.rotation.x=-legL.rotation.x*.7;armR.rotation.x=-legR.rotation.x*.7;nearby=null;let nearest=Infinity;for(const bld of interactables){const d=Math.hypot(avatar.position.x-bld.x,avatar.position.z-bld.doorZ);if(d<nearest){nearest=d;nearby=bld}}document.querySelector('#interaction-hint').textContent=Math.hypot(avatar.position.x-car.position.x,avatar.position.z-car.position.z)<4?'E ENTER CAR':'E INTERACT';return}
  const forward=keys.has('ArrowUp')||keys.has('KeyW'),reverse=keys.has('ArrowDown')||keys.has('KeyS');
  const left=keys.has('ArrowLeft')||keys.has('KeyA'),right=keys.has('ArrowRight')||keys.has('KeyD');
  steer=(right?1:0)-(left?1:0);
@@ -128,11 +148,12 @@ function update(dt){
 const chaseOffset=new THREE.Vector3();
 let last=performance.now(),fpsFrames=0,fpsTime=0;
 function animate(now){const dt=Math.min((now-last)/1000,.033);last=now;update(dt);
- if(inBuilding&&interiorGroup){camera.position.lerp(new THREE.Vector3(car.position.x+9,4,car.position.z+12),.08);camera.lookAt(car.position.x,1.4,car.position.z)}
+ if(onFoot){const forward=new THREE.Vector3(Math.sin(avatar.rotation.y),0,Math.cos(avatar.rotation.y));const target=avatar.position.clone().add(new THREE.Vector3(0,3.4,0)).add(forward.clone().multiplyScalar(-6));camera.position.lerp(target,.12);camera.lookAt(avatar.position.x,1.2,avatar.position.z)}
+ else if(inBuilding&&interiorGroup){camera.position.lerp(new THREE.Vector3(car.position.x+9,4,car.position.z+12),.08);camera.lookAt(car.position.x,1.4,car.position.z)}
  else if(interiorView){const forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));const target=car.position.clone().add(new THREE.Vector3(0,1.95,0)).add(forward.clone().multiplyScalar(3.8));camera.position.lerp(target,.22);camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.55,0)).add(forward.clone().multiplyScalar(24)))}
  else{chaseOffset.set(-Math.sin(heading)*10,5.5,-Math.cos(heading)*10);const target=car.position.clone().add(chaseOffset);camera.position.lerp(target,1-Math.pow(.0005,dt));camera.lookAt(car.position.x,1.1,car.position.z)}
- renderer.render(scene,camera);fpsFrames++;fpsTime+=dt;if(fpsTime>2){document.querySelector('#world-status').textContent='WORLD: READY';fpsFrames=0;fpsTime=0}requestAnimationFrame(animate)}
+ renderer.render(scene,camera);if(!window.__apexlotFirstFrame){window.__apexlotFirstFrame=true;const boot=document.querySelector('#boot');if(boot)boot.classList.add('done')}fpsFrames++;fpsTime+=dt;if(fpsTime>2){document.querySelector('#world-status').textContent='WORLD: READY';fpsFrames=0;fpsTime=0}requestAnimationFrame(animate)}
 requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.25))});
 document.querySelector('#clock').textContent='SUNNY / 12:00';
-const bootOverlay=document.querySelector('#boot');\nfunction finishBoot(){if(bootOverlay)bootOverlay.classList.add('done')}\n// Hide the splash as soon as the game loop is running; also recover from delayed startup.\nsetTimeout(finishBoot,700);\nsetTimeout(()=>{if(bootOverlay&&!bootOverlay.classList.contains('done')){const status=document.querySelector('#boot-status');if(status)status.textContent='STARTUP RECOVERY';finishBoot()}},8000);
+// Splash dismissal is driven by the first successful rendered frame.
