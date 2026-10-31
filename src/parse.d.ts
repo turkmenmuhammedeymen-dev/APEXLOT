@@ -1,1 +1,4 @@
-declare module "parse" {\n  const Parse: any;\n  export default Parse;\n}\n
+declare module "parse" {
+  const Parse: any;
+  export default Parse;
+}
