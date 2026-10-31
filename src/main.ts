@@ -4,9 +4,7 @@ declare global {
   interface Window { __apexlotFirstFrame?: boolean; }
 }
 
-declare global {
-  interface Window { __apexlotFirstFrame?: boolean; }
-}
+
 import { initializeParse } from "./services/parseClient";
 
 const boot = document.querySelector<HTMLElement>("#boot");
