@@ -1,0 +1,1 @@
+declare module "parse" {\n  const Parse: any;\n  export default Parse;\n}\n
